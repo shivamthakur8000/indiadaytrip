@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Handle tour detail pages
+RewriteRule ^tour/([a-zA-Z0-9-]+)$ index.php?type=tour&slug=$1 [L,QSA]
+
+# Handle blog detail pages
+RewriteRule ^blog/([a-zA-Z0-9-]+)$ index.php?type=blog&slug=$1 [L,QSA]
+
+# Handle other pages (if needed)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php [L]
