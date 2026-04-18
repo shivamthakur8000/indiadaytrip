@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Submission Test</title>
+    <script src="assets/js/vendor/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Form Submission Test</h1>
+    
+    <h2>Test 1: to_book form HTML structure</h2>
+    <pre id="test1"></pre>
+
+    <h2>Test 2: API mail.php syntax</h2>
+    <pre id="test2"></pre>
+
+    <h2>Test 3: main.js form handler</h2>
+    <pre id="test3"></pre>
+
+    <h2>Test 4: Direct form submit with AJAX</h2>
+    <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
+        <form id="testForm" class="ajax-contact" action="api/mail.php" method="POST" style="max-width: 400px;">
+            <input type="hidden" name="form_type" value="booking">
+            <div>
+                <label>First Name (required)</label>
+                <input type="text" name="first_name" value="John" required>
+            </div>
+            <div>
+                <label>Last Name (required)</label>
+                <input type="text" name="last_name" value="Test" required>
+            </div>
+            <div>
+                <label>Email (required)</label>
+                <input type="email" name="email" value="test@example.com" required>
+            </div>
+            <div>
+                <label>Phone (required)</label>
+                <input type="tel" name="phone" value="1234567890" required>
+            </div>
+            <div>
+                <label>CAPTCHA</label>
+                <input type="number" name="captcha" value="10" required>
+            </div>
+            <input type="hidden" name="use_captcha" value="0">
+            <input type="hidden" name="website_url" value="">
+            <input type="hidden" name="csrf_token" value="">
+            <button type="submit">Submit Form</button>
+            <p class="form-messages"></p>
+        </form>
+    </div>
+
+    <script>
+        // Display test results
+
+        // Test 1: Check to_book form structure
+        fetch('to_book/index.php')
+            .then(r => r.text())
+            .then(html => {
+                let hasForm = html.includes('class="booking-form ajax-contact"');
+                let hasCSRF = html.includes('name="csrf_token"');
+                let hasMessages = html.includes('class="form-messages');
+                let hasAction = html.includes('action="../api/mail.php"') || html.includes('action="/api/mail.php"');
+                document.getElementById('test1').textContent = 
+                    'Has form.ajax-contact: ' + hasForm + '\n' +
+                    'Has CSRF token: ' + hasCSRF + '\n' +
+                    'Has form-messages: ' + hasMessages + '\n' +
+                    'Has correct action: ' + hasAction;
+            });
+
+        // Test 2: Check api/mail.php
+        fetch('api/mail.php', {method: 'HEAD'})
+            .then(r => document.getElementById('test2').textContent = 'api/mail.php status: ' + r.status)
+            .catch(e => document.getElementById('test2').textContent = 'Error: ' + e.message);
+
+        // Test 3: Check main.js loaded
+        setTimeout(() => {
+            let hasJQuery = typeof $ !== 'undefined';
+            let hasHandler = $(document).data('events') && $(document).data('events').submit ? 'YES' : 'CHECK CONSOLE';
+            document.getElementById('test3').textContent = 
+                'jQuery loaded: ' + hasJQuery + '\n' +
+                'Form handlers registered: ' + hasHandler + '\n' +
+                'Window.location: ' + window.location.href;
+        }, 500);
+
+        // Test 4: Bind AJAX form submit
+        $(document).on('submit', '#testForm', function(e) {
+            e.preventDefault();
+            console.log('Form submitted via AJAX');
+            let form = $(this);
+            let data = form.serialize();
+            console.log('Sending data:', data);
+            
+            $.ajax({
+                url: form.attr('action'),
+                method: form.attr('method'),
+                data: data,
+                success: function(response) {
+                    console.log('Success response:', response);
+                    alert('SUCCESS:\n' + response);
+                },
+                error: function(xhr) {
+                    console.log('Error response:', xhr.responseText);
+                    alert('ERROR:\n' + xhr.responseText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
